@@ -1,6 +1,19 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional
+from bson import ObjectId
+
+
+class PyObjectId(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if isinstance(v, ObjectId):
+            return str(v)
+        return str(v)
 
 
 class ProductBase(BaseModel):
@@ -22,7 +35,7 @@ class ProductUpdate(BaseModel):
 
 
 class ProductResponse(ProductBase):
-    id: int
+    id: str
     created_at: datetime
 
     class Config:
