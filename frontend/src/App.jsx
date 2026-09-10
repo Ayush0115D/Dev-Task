@@ -11,6 +11,8 @@ function App() {
     price: '',
     status: 'active'
   })
+  const [errors, setErrors] = useState({})
+  const [apiError, setApiError] = useState('')
 
   const fetchProducts = async () => {
     try {
@@ -18,10 +20,12 @@ function App() {
         ? `/api/products?search=${encodeURIComponent(search)}`
         : '/api/products'
       const response = await fetch(url)
+      if (!response.ok) throw new Error('Failed to fetch products')
       const data = await response.json()
       setProducts(data)
+      setApiError('')
     } catch (err) {
-      console.error('Failed to fetch products:', err)
+      setApiError('Failed to load products. Please try again.')
     }
   }
 
@@ -29,8 +33,22 @@ function App() {
     fetchProducts()
   }, [search])
 
+  const validateForm = () => {
+    const newErrors = {}
+    if (!formData.name.trim()) newErrors.name = 'Name is required'
+    if (!formData.sku.trim()) newErrors.sku = 'SKU is required'
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      newErrors.price = 'Price must be greater than 0'
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setApiError('')
+    if (!validateForm()) return
+
     try {
       const productData = {
         ...formData,
@@ -41,28 +59,35 @@ function App() {
         ? `/api/products/${editingProduct.id}`
         : '/api/products'
 
-      await fetch(url, {
+      const response = await fetch(url, {
         method: editingProduct ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       })
 
+      if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.detail || 'Operation failed')
+      }
+
       setShowModal(false)
       setEditingProduct(null)
       setFormData({ name: '', sku: '', price: '', status: 'active' })
+      setErrors({})
       fetchProducts()
     } catch (err) {
-      console.error('Failed to save product:', err)
+      setApiError(err.message)
     }
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return
     try {
-      await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error('Failed to delete product')
       fetchProducts()
     } catch (err) {
-      console.error('Failed to delete product:', err)
+      setApiError('Failed to delete product')
     }
   }
 
@@ -75,11 +100,15 @@ function App() {
       status: product.status
     })
     setShowModal(true)
+    setErrors({})
+    setApiError('')
   }
 
   const openAddModal = () => {
     setEditingProduct(null)
     setFormData({ name: '', sku: '', price: '', status: 'active' })
+    setErrors({})
+    setApiError('')
     setShowModal(true)
   }
 
@@ -91,6 +120,8 @@ function App() {
       </header>
 
       <div className="container">
+        {apiError && <div className="error-message">⚠️ {apiError}</div>}
+
         <div className="card">
           <div className="toolbar">
             <div className="search-wrapper">
@@ -180,6 +211,7 @@ function App() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
+                {errors.name && <div className="error">⚠️ {errors.name}</div>}
               </div>
 
               <div className="form-group">
@@ -190,6 +222,7 @@ function App() {
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                 />
+                {errors.sku && <div className="error">⚠️ {errors.sku}</div>}
               </div>
 
               <div className="form-group">
@@ -202,6 +235,7 @@ function App() {
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 />
+                {errors.price && <div className="error">⚠️ {errors.price}</div>}
               </div>
 
               <div className="form-group">
@@ -219,7 +253,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => { setShowModal(false); setEditingProduct(null) }}
+                  onClick={() => { setShowModal(false); setEditingProduct(null); setErrors({}) }}
                 >
                   Cancel
                 </button>
