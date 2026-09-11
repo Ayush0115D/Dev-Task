@@ -2,6 +2,12 @@
 
 A full-stack product management dashboard built with FastAPI, React, and MongoDB.
 
+## Screenshots
+
+![Product Dashboard](Screenshot%202026-09-11%20123503.png)
+
+![Docker Containers](Screenshot%202026-09-11%20123621.png)
+
 ## Project Structure
 
 ```
@@ -11,7 +17,8 @@ A full-stack product management dashboard built with FastAPI, React, and MongoDB
 │   │   ├── __init__.py
 │   │   ├── main.py          # FastAPI application
 │   │   ├── database.py      # MongoDB connection
-│   │   └── schemas.py       # Pydantic models
+│   │   ├── schemas.py       # Pydantic models
+│   │   └── models.py
 │   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
@@ -19,6 +26,7 @@ A full-stack product management dashboard built with FastAPI, React, and MongoDB
 │   │   ├── main.jsx         # React entry point
 │   │   ├── App.jsx          # Main component
 │   │   └── index.css        # Dark theme styles
+│   ├── index.html
 │   ├── package.json
 │   ├── vite.config.js
 │   ├── nginx.conf
@@ -32,11 +40,13 @@ A full-stack product management dashboard built with FastAPI, React, and MongoDB
 
 ### Using Docker (Recommended)
 
+**Prerequisite:** Docker Desktop must be running.
+
 1. Clone the repository
 2. Run the application:
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
 The application will be available at:
@@ -44,6 +54,8 @@ The application will be available at:
 - Backend API: http://localhost:8000
 
 ### Manual Setup
+
+**Prerequisite:** MongoDB must be running locally at `mongodb://localhost:27017`.
 
 **Backend:**
 ```bash
@@ -66,6 +78,7 @@ npm run dev
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | /api/products | Get all products |
+| GET | /api/products?search=laptop | Search products by name or SKU |
 | GET | /api/products/{id} | Get single product |
 | POST | /api/products | Create product |
 | PUT | /api/products/{id} | Update product |
