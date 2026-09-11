@@ -215,10 +215,10 @@ function App() {
               </div>
 
               <div className="form-group">
-                <label>SKU</label>
+                <label>SKU (Stock Keeping Unit)</label>
                 <input
                   type="text"
-                  placeholder="Enter SKU"
+                  placeholder="Enter SKU e.g. SHIRT-BLK-M"
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                 />
